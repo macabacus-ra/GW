@@ -1,6 +1,57 @@
+const userProperties = PropertiesService.getUserProperties();
+const dialogWidth = 200;
+const dialogHeight = 170;
+const headingTitle = "Gap Size"
+
+function stackLeftDialog() {
+  userProperties.setProperty('stackDirection', "left");
+  let html = HtmlService.createHtmlOutputFromFile('stackDialog').setWidth(dialogWidth).setHeight(dialogHeight);
+  SlidesApp.getUi().showModalDialog(html, headingTitle);
+}
+
+function stackRightDialog() {
+  userProperties.setProperty('stackDirection', "right");
+  let html = HtmlService.createHtmlOutputFromFile('stackDialog').setWidth(dialogWidth).setHeight(dialogHeight);
+  SlidesApp.getUi().showModalDialog(html, headingTitle);
+}
+
+function stackUpDialog() {
+  userProperties.setProperty('stackDirection', "up");
+  let html = HtmlService.createHtmlOutputFromFile('stackDialog').setWidth(dialogWidth).setHeight(dialogHeight);
+  SlidesApp.getUi().showModalDialog(html, headingTitle);
+}
+
+function stackDownDialog() {
+  userProperties.setProperty('stackDirection', "down");
+  let html = HtmlService.createHtmlOutputFromFile('stackDialog').setWidth(dialogWidth).setHeight(dialogHeight);
+  SlidesApp.getUi().showModalDialog(html, headingTitle);
+}
+
+function stack(gap, unit){
+  const userProperties = PropertiesService.getUserProperties(); 
+  const stackDirection = userProperties.getProperty('stackDirection');
+
+  switch (stackDirection) {
+    case 'left':
+      stackLeft(gap, unit)
+      break;
+    case 'right':
+      stackRight(gap, unit)
+      break;
+    case 'up':
+      stackUp(gap, unit)
+      break;
+    case 'down':
+      stackDown(gap, unit)
+      break;
+  }
+}
 
 
-function showStackLeftDialog() {
+
+function stackLeft(gapValue, unitValue) {
+  let gap = gapValue;
+  console.log(unitValue)
 
   let selections = SlidesApp.getActivePresentation().getSelection()
   let pageElementRange = selections.getPageElementRange()
@@ -8,28 +59,6 @@ function showStackLeftDialog() {
     SlidesApp.getUi().alert('Select select two or more shapes to perform this operation');
     return 
   }
-
-  if (pageElementRange){
-    let elements = pageElementRange.getPageElements()
-    if(elements.length < 2){ SlidesApp.getUi().alert('Select select two or more shapes to perform this operation');
-    return }
-  }
-
-   var html = HtmlService.createHtmlOutputFromFile('stackDialog')
-      .setWidth(200)
-      .setHeight(170);
-  SlidesApp.getUi()
-      .showModalDialog(html, 'Gap Size');
-}
-
-
-
-
-function stackLeft(gapValue, unitValue) {
-  let gap = gapValue;
-
-  let selections = SlidesApp.getActivePresentation().getSelection()
-  let pageElementRange = selections.getPageElementRange()
   if (pageElementRange){
     let elements = pageElementRange.getPageElements()
 
@@ -41,9 +70,9 @@ function stackLeft(gapValue, unitValue) {
 
       for (let i = 0; i < sorted.length; i++) {
         let leftPosition = nextShapePosition > 0 ? nextShapePosition : sorted[i].getLeft()
-        //let leftPosition = nextShapePosition
+        
         sorted[i].setLeft(leftPosition);
-        // sorted[i].setLeft(0);
+
         nextShapePosition = sorted[i].getLeft() + sorted[i].getWidth() + gap;
       }
     }else{
@@ -56,8 +85,8 @@ function stackLeft(gapValue, unitValue) {
 //============================================================================================================================
 //============================================================================================================================
 
-function stackRight() {
-  let gap = 1;
+function stackRight(gapValue, unitValue) {
+  let gap = gapValue;
 
   let selections = SlidesApp.getActivePresentation().getSelection()
   let pageElementRange = selections.getPageElementRange()
@@ -110,5 +139,38 @@ function stackRight() {
       SlidesApp.getUi().alert('Select two or more shapes to perform this operation');
     }
   }       
-  
+}
+//============================================================================================================================
+//============================================================================================================================
+//============================================================================================================================
+
+function stackUp(gapValue, unitValue) {
+  let gap = gapValue;
+  console.log(unitValue)
+
+  let selections = SlidesApp.getActivePresentation().getSelection()
+  let pageElementRange = selections.getPageElementRange()
+  if(!pageElementRange){ 
+    SlidesApp.getUi().alert('Select select two or more shapes to perform this operation');
+    return 
+  }
+  if (pageElementRange){
+    let elements = pageElementRange.getPageElements()
+
+    if(elements.length >= 2){  
+      let nextShapePosition = 0;
+
+      // sort arrays from left position to determine order for the iterative operation of setting gap
+      let sorted = elements.sort((a, b) => a.getTop() - b.getTop());
+
+      for (let i = 0; i < sorted.length; i++) {
+        let topPosition = nextShapePosition > 0 ? nextShapePosition : sorted[i].getTop()
+
+        sorted[i].setTop(topPosition);
+        nextShapePosition = sorted[i].getTop() + sorted[i].getHeight() + gap;
+      }
+    }else{
+      SlidesApp.getUi().alert('Select two or more shapes to perform this operation');
+    }
+  }       
 }
