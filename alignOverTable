@@ -1,0 +1,9 @@
+function alignOverTable() {
+
+  let selections = SlidesApp.getActivePresentation().getSelection().getPageElementRange().getPageElements()
+
+  selections.map((sel, index) => {
+    console.log(sel.getPageElementType() === SlidesApp.PageElementType.TABLE)
+  })
+
+}
