@@ -1,0 +1,23 @@
+function getLineSpacing() {
+  let selections = SlidesApp.getActivePresentation().getSelection()
+  let pageElementRange = selections.getPageElementRange()
+  if(!pageElementRange){ console.log('Select a two shapes to perform this operation');return }
+
+  if (pageElementRange){
+    let elements = pageElementRange.getPageElements()
+    let textBox = elements[0].asShape().getText().getParagraphStyle().getLineSpacing()
+    console.log(textBox)
+  }
+}
+
+function setLineSpacing(){
+  let selections = SlidesApp.getActivePresentation().getSelection()
+  let pageElementRange = selections.getPageElementRange()
+  if(!pageElementRange){ console.log('Select a two shapes to perform this operation');return }
+
+  if (pageElementRange){
+    let elements = pageElementRange.getPageElements()
+    elements[0].asShape().getText().getParagraphStyle().setLineSpacing(150)
+    // console.log(textBox)
+  }
+}
