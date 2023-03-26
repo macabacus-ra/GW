@@ -1,12 +1,40 @@
-function getLineSpacing() {
+function increaseLineSpacing() {
   let selections = SlidesApp.getActivePresentation().getSelection()
   let pageElementRange = selections.getPageElementRange()
-  if(!pageElementRange){ console.log('Select a two shapes to perform this operation');return }
+  if(!pageElementRange){ console.log('Select one or more shapes to perform this operation');return }
 
   if (pageElementRange){
     let elements = pageElementRange.getPageElements()
-    let textBox = elements[0].asShape().getText().getParagraphStyle().getLineSpacing()
-    console.log(textBox)
+
+    elements.map((shape) => {
+      let text = shape.asShape().getText()
+      let hasText = !text.isEmpty()
+
+      if(hasText){
+        let lineSpacing = text.getParagraphStyle().getLineSpacing()
+        text.getParagraphStyle().setLineSpacing(lineSpacing + 10)
+      }
+    })
+  }
+}
+
+function decreaseLineSpacing() {
+  let selections = SlidesApp.getActivePresentation().getSelection()
+  let pageElementRange = selections.getPageElementRange()
+  if(!pageElementRange){ console.log('Select one or more shapes to perform this operation');return }
+
+  if (pageElementRange){
+    let elements = pageElementRange.getPageElements()
+
+    elements.map((shape) => {
+      let text = shape.asShape().getText()
+      let hasText = !text.isEmpty()
+
+      if(hasText){
+        let lineSpacing = text.getParagraphStyle().getLineSpacing()
+        text.getParagraphStyle().setLineSpacing(lineSpacing - 10)
+      }
+    })
   }
 }
 
