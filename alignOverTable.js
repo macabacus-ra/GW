@@ -90,13 +90,22 @@ function alignOverTable(direction) {
           if(rowIndex === 0){ tableEdges.right += colWidth } // this is to keep track of TABLE total width since Apps Script does not provide that for tables
           // and we can get the right ege of the table by only doing this line above when the row index is 0      
 
-          cellEdges.top = currentRowTop;
-          cellEdges.left = currColLeft;
-          cellEdges.right = currColLeft + colWidth
-          cellEdges.bottom = currentRowTop + rowHeight
+          // cellEdges.top = currentRowTop;
+          // cellEdges.left = currColLeft;
+          // cellEdges.right = currColLeft + colWidth
+          // cellEdges.bottom = currentRowTop + rowHeight
 
-          cols.push(cellEdges)
+          cols.push({
+            top: currentRowTop,
+            left: currColLeft,
+            right: currColLeft + colWidth,
+            bottom: currentRowTop + rowHeight
+          })
+          
+          
+          // cellEdges = iState
           currColLeft += colWidth
+
         }
   
         tableArray.push(cols)
@@ -107,7 +116,7 @@ function alignOverTable(direction) {
 
       // we now have the absolute coordinates of table and each cell, we are now able to determine if a shape is overlapping
 
-
+      console.log(tableArray)
 
 
       for(let i = 0; i < shapes.length; i++){
@@ -149,8 +158,4 @@ function alignOverTable(direction) {
     }
   }
 }
-
-
-
-
 
