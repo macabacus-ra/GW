@@ -27,16 +27,6 @@ function showAlignOverTableDialog(){
 
 
 function alignOverTable(direction) {
-  let direction1 = 'tlc'
-  let direction2 = 'tch'
-  let direction3 = 'trc'
-  let direction4 = 'clv'
-  let direction5 = 'center'
-  let direction6 = 'crv'
-  let direction7 = 'blc'
-  let direction8 = 'bch'
-  let direction9 = 'brc'
- 
 
   let selections = SlidesApp.getActivePresentation().getSelection()
   let pageElementRange = selections.getPageElementRange()
@@ -73,17 +63,6 @@ function alignOverTable(direction) {
         bottom: table.getTop(),
       }
 
-      // should also note the border widths .. maybe??
-
-      let iState = {
-        top: 0,
-        right: 0,
-        bottom: 0,
-        left: 0
-      }
-
-      let cellEdges = iState
-
       let tableArray = [] //create a two dimensional array with cell absolute x and y positions from "cellEdges" object for EACH cell.
       let currentRowTop = tableEdges.top;
 
@@ -100,11 +79,6 @@ function alignOverTable(direction) {
           if(rowIndex === 0){ tableEdges.right += colWidth } // this is to keep track of TABLE total width since Apps Script does not provide that for tables
           // and we can get the right ege of the table by only doing this line above when the row index is 0      
 
-          // cellEdges.top = currentRowTop;
-          // cellEdges.left = currColLeft;
-          // cellEdges.right = currColLeft + colWidth
-          // cellEdges.bottom = currentRowTop + rowHeight
-
           cols.push({
             top: currentRowTop,
             right: currColLeft + colWidth,
@@ -113,17 +87,13 @@ function alignOverTable(direction) {
             width: colWidth,
             height: rowHeight,
           })
-          
-          // cellEdges = iState
-          currColLeft += colWidth
 
+          currColLeft += colWidth
         }
   
         tableArray.push(cols)
         currentRowTop += rowHeight;
       }
-
-
 
       // **************************************************************************************************************************
       // we now have the absolute coordinates of table and each cell...  So we are now able to determine if a shape is overlapping
@@ -257,7 +227,10 @@ function alignOverTable(direction) {
 
           }
         }
+        
+        //Record the cell filled so that we do not have to check it for overlap again
         listFilledCells.push(`${bestFillCellAddress.r}-${bestFillCellAddress.c}`)
+
       }
     }
   }
@@ -296,5 +269,4 @@ function getLargestAreaCell(array){
   }
   return cellId;
 }
-
 
