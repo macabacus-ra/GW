@@ -158,6 +158,8 @@ function alignOverTable(direction) {
                 // calculate area of interection, the greatest area is where shape should belong
                 let area = getArea(shape, cell)
 
+
+
                 intersectionArray.push({
                   r: r,
                   c: c,
@@ -169,11 +171,20 @@ function alignOverTable(direction) {
         } //end table cell looping
 
         if(intersectionArray.length > 1){
+          // if shape overlaps more than one cell, get the most appropriate cell
           bestFillCellAddress = getLargestAreaCell(intersectionArray)
+
+        }else{
+
+          bestFillCellAddress = {r: intersectionArray[0].r, c: intersectionArray[0].c}
+        
+        }
+
+        if(bestFillCellAddress){
           console.log(` For shape ${shapes[i].asShape().getText().asString()}, the best fitting cell is ${JSON.stringify(bestFillCellAddress)}`)
 
 
-
+          // align the shape. be sure to track the shape so you dont align it again!!!
 
 
         }
@@ -212,8 +223,4 @@ function getLargestAreaCell(array){
   }
   return cellId;
 }
-
-
-
-
 
