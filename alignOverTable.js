@@ -97,11 +97,10 @@ function alignOverTable(direction) {
 
           cols.push({
             top: currentRowTop,
-            left: currColLeft,
             right: currColLeft + colWidth,
-            bottom: currentRowTop + rowHeight
+            bottom: currentRowTop + rowHeight,
+            left: currColLeft,
           })
-          
           
           // cellEdges = iState
           currColLeft += colWidth
@@ -114,9 +113,10 @@ function alignOverTable(direction) {
 
 
 
-      // we now have the absolute coordinates of table and each cell, we are now able to determine if a shape is overlapping
-
-      console.log(tableArray)
+      // **************************************************************************************************************************
+      // we now have the absolute coordinates of table and each cell...  So we are now able to determine if a shape is overlapping
+      // ******************************************************************************************************************
+      // console.log(tableArray)
 
 
       for(let i = 0; i < shapes.length; i++){
@@ -126,14 +126,17 @@ function alignOverTable(direction) {
 
         let shapeSize = {
           width: shapes[i].getWidth(),
-          height: shapes[i].getHeight(),
-          topEge: shapes[i].getTop(),
-          rightEdge: shapes[i].getLeft() + shapes[i].getWidth(),
-          bottomEdge: shapes[i].getTop() + shapes[i].getHeight(),
-          leftEdge: shapes[i].getLeft()
+          height: shapes[i].getHeight(),          
+        }
+
+        let shape = {
+          top: shapes[i].getTop(),
+          right: shapes[i].getLeft() + shapes[i].getWidth(),
+          bottom: shapes[i].getTop() + shapes[i].getHeight(),
+          left: shapes[i].getLeft()
         }; // use this to check intersection since Apps Script does not have a VSTO "Intersect()" equivalent
 
-
+        let intersectionArea = 0;
 
         for(let r = 0; r < intRows; r++){
           for(let c = 0; c < intCols; c++){
@@ -144,11 +147,24 @@ function alignOverTable(direction) {
             if(!listFilledCells.find(ele => ele === cellId)){
               //continue with function
 
-              let cellSize = tableArray[r][c]
+              let cell = tableArray[r][c]
+              
+              let shapesIntersect = intersection(shape, cell)
 
-              console.log(`---::  cell ${r} : ${c}  ::------`)
-              console.log(cellSize)
-              console.log(`----------------`)
+              if(shapesIntersect){
+                console.log(`shape ${i} intersects cell: ${r}-${c}`)
+
+                // calculate area of interection, the greatest area is where shape should belong
+
+                let area = getArea(shape, cell)
+
+                console.log(`Area of intersection: ${area}`)
+                
+
+              }
+
+
+
 
               //does the current shape intersect the current cell?
             }
@@ -157,5 +173,27 @@ function alignOverTable(direction) {
       }
     }
   }
+}
+
+
+function intersection(shape1, shape2){
+  //shape and cell are object with top, right, bottom, left values representing their positions on an active slide
+  return !(
+      shape2.left > shape1.right || shape2.right < shape1.left 
+      ||
+      shape2.top > shape1.bottom || shape2.bottom < shape1.top
+    );
+
+}
+
+
+function getArea(shape1, shape2) {
+
+    let left = Math.max(shape1.left, shape2.left);
+    let right = Math.min(shape1.right, shape2.right);
+    let top = Math.max(shape1.top, shape2.top);
+    let bottom = Math.min(shape1.bottom, shape2.bottom);
+
+    return (right - left) * (bottom - top);
 }
 
