@@ -28,6 +28,15 @@ function showAlignOverTableDialog(){
 
 function alignOverTable(direction) {
   let direction1 = 'tlc'
+  let direction2 = 'tch'
+  let direction3 = 'trc'
+  let direction4 = 'clv'
+  let direction5 = 'center'
+  let direction6 = 'crv'
+  let direction7 = 'blc'
+  let direction8 = 'bch'
+  let direction9 = 'brc'
+ 
 
   let selections = SlidesApp.getActivePresentation().getSelection()
   let pageElementRange = selections.getPageElementRange()
@@ -38,6 +47,7 @@ function alignOverTable(direction) {
 
     // Find the table and shapes
     let tables = []; let shapes = [];
+
     for(let i = 0; i < elements.length; i++){
       if(elements[i].getPageElementType() === SlidesApp.PageElementType.SHAPE){ shapes.push(elements[i]) }
       else if(elements[i].getPageElementType() === SlidesApp.PageElementType.TABLE){ tables.push(elements[i]) }
@@ -100,6 +110,8 @@ function alignOverTable(direction) {
             right: currColLeft + colWidth,
             bottom: currentRowTop + rowHeight,
             left: currColLeft,
+            width: colWidth,
+            height: rowHeight,
           })
           
           // cellEdges = iState
@@ -121,7 +133,7 @@ function alignOverTable(direction) {
 
       for(let i = 0; i < shapes.length; i++){
         let overlap = 0;
-        let bestFillCell;
+        let bestFillCell = false;
         let bestFillCellAddress;
         let cellId;
 
@@ -149,6 +161,7 @@ function alignOverTable(direction) {
 
             if(!listFilledCells.find(ele => ele === cellId)){
               //continue with function
+
               let cell = tableArray[r][c]
               
               let shapesIntersect = intersection(shape, cell)
@@ -158,14 +171,14 @@ function alignOverTable(direction) {
                 // calculate area of interection, the greatest area is where shape should belong
                 let area = getArea(shape, cell)
 
-
-
                 intersectionArray.push({
                   r: r,
                   c: c,
                   area: area
                 })
               }
+            }else{
+              console.log(`cell already fitted`)
             }
           }
         } //end table cell looping
@@ -173,21 +186,78 @@ function alignOverTable(direction) {
         if(intersectionArray.length > 1){
           // if shape overlaps more than one cell, get the most appropriate cell
           bestFillCellAddress = getLargestAreaCell(intersectionArray)
+          bestFillCell = true
 
-        }else{
-
+        }else if(intersectionArray.length === 1){
+          bestFillCell = true
           bestFillCellAddress = {r: intersectionArray[0].r, c: intersectionArray[0].c}
-        
         }
 
-        if(bestFillCellAddress){
-          console.log(` For shape ${shapes[i].asShape().getText().asString()}, the best fitting cell is ${JSON.stringify(bestFillCellAddress)}`)
+        if(bestFillCell){
+          // console.log(` For shape ${shapes[i].asShape().getText().asString()}, the best fitting cell is ${JSON.stringify(bestFillCellAddress)}`)
+          // Reposition the shape over the best cell
 
+          // better readability
+          let shp = shapes[i].asShape()
 
-          // align the shape. be sure to track the shape so you dont align it again!!!
+          // for readbility. This gives the object with all the cell coordinates { top, right, bottom, left, width, height } as stored from the first for loop
+          let currCell = tableArray[bestFillCellAddress.r][bestFillCellAddress.c] 
+          
 
+          switch (direction9) {
+            // ====================== top  =============================
+            case 'tlc':
+              shp.setLeft( currCell.left );
+              shp.setTop( currCell.top );
+              break;
 
+            case 'tch':
+              shp.setLeft((currCell.left + (currCell.width/2)) - (shp.getWidth()/2) );
+              shp.setTop( currCell.top );
+              break;
+
+            case 'trc':
+              shp.setLeft(currCell.right - shp.getWidth());
+              shp.setTop( currCell.top );
+              break;
+            
+            // ======================== middle ==============================
+
+            case 'clv':
+              shp.setLeft( currCell.left );
+              shp.setTop( currCell.top + (currCell.height/2) - (shp.getHeight()/2) );
+              break;
+          
+            case 'center':
+              shp.setLeft( (currCell.left + (currCell.width/2)) - (shp.getWidth()/2) );
+              shp.setTop( currCell.top + (currCell.height/2) - (shp.getHeight()/2) );
+              break;
+
+            case 'trc':
+              shp.setLeft(currCell.right - shp.getWidth());
+              shp.setTop( currCell.top + (currCell.height/2) - (shp.getHeight()/2) );
+              break;
+
+            // ========================== bottom ==========================
+
+            case 'blc':
+              shp.setLeft( currCell.left );
+              shp.setTop( currCell.bottom - shp.getHeight()  );
+              break;
+
+            case 'bch':
+              shp.setLeft( (currCell.left + (currCell.width/2)) - (shp.getWidth()/2) );
+              shp.setTop( currCell.bottom - shp.getHeight()  );
+              break;
+
+            case 'brc':
+              shp.setLeft( currCell.right - shp.getWidth() );
+              shp.setTop( currCell.bottom - shp.getHeight()  );
+              break;
+
+          }
         }
+        listFilledCells.push(`${bestFillCellAddress.r}-${bestFillCellAddress.c}`)
       }
     }
   }
@@ -195,7 +265,10 @@ function alignOverTable(direction) {
 
 
 function intersection(shape1, shape2){
-  //shape and cell are object with top, right, bottom, left values representing their positions on an active slide
+  //"shape" and "cell" are objects with properties: {top, right, bottom, left} these values representing their positions on an active slide
+  // the edges will *NOT* overlap, (meaning the rectangles will NOT intersect) if these conditions are true. Hence, we return the negated value to check for intersection. 
+  // if the negation is true, we know they must intersect. 
+
   return !(
       shape2.left > shape1.right || shape2.right < shape1.left 
       ||
@@ -223,4 +296,5 @@ function getLargestAreaCell(array){
   }
   return cellId;
 }
+
 
