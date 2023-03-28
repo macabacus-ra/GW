@@ -204,7 +204,7 @@ function alignOverTable(direction) {
           let currCell = tableArray[bestFillCellAddress.r][bestFillCellAddress.c] 
           
 
-          switch (direction9) {
+          switch (direction) {
             // ====================== top  =============================
             case 'tlc':
               shp.setLeft( currCell.left );
@@ -233,7 +233,7 @@ function alignOverTable(direction) {
               shp.setTop( currCell.top + (currCell.height/2) - (shp.getHeight()/2) );
               break;
 
-            case 'trc':
+            case 'crv':
               shp.setLeft(currCell.right - shp.getWidth());
               shp.setTop( currCell.top + (currCell.height/2) - (shp.getHeight()/2) );
               break;
