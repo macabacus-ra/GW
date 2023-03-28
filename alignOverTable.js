@@ -122,6 +122,7 @@ function alignOverTable(direction) {
       for(let i = 0; i < shapes.length; i++){
         let overlap = 0;
         let bestFillCell;
+        let bestFillCellAddress;
         let cellId;
 
         let shapeSize = {
@@ -137,6 +138,8 @@ function alignOverTable(direction) {
         }; // use this to check intersection since Apps Script does not have a VSTO "Intersect()" equivalent
 
         let intersectionArea = 0;
+        let intersectionCount = 0
+        let intersectionArray = [];
 
         for(let r = 0; r < intRows; r++){
           for(let c = 0; c < intCols; c++){
@@ -146,29 +149,33 @@ function alignOverTable(direction) {
 
             if(!listFilledCells.find(ele => ele === cellId)){
               //continue with function
-
               let cell = tableArray[r][c]
               
               let shapesIntersect = intersection(shape, cell)
 
               if(shapesIntersect){
-                console.log(`shape ${i} intersects cell: ${r}-${c}`)
-
+                // console.log(`shape ${i} intersects cell: ${r}-${c}`)
                 // calculate area of interection, the greatest area is where shape should belong
-
                 let area = getArea(shape, cell)
 
-                console.log(`Area of intersection: ${area}`)
-                
-
+                intersectionArray.push({
+                  r: r,
+                  c: c,
+                  area: area
+                })
               }
-
-
-
-
-              //does the current shape intersect the current cell?
             }
           }
+        } //end table cell looping
+
+        if(intersectionArray.length > 1){
+          bestFillCellAddress = getLargestAreaCell(intersectionArray)
+          console.log(` For shape ${shapes[i].asShape().getText().asString()}, the best fitting cell is ${JSON.stringify(bestFillCellAddress)}`)
+
+
+
+
+
         }
       }
     }
@@ -183,17 +190,30 @@ function intersection(shape1, shape2){
       ||
       shape2.top > shape1.bottom || shape2.bottom < shape1.top
     );
-
 }
 
 
 function getArea(shape1, shape2) {
-
     let left = Math.max(shape1.left, shape2.left);
     let right = Math.min(shape1.right, shape2.right);
     let top = Math.max(shape1.top, shape2.top);
     let bottom = Math.min(shape1.bottom, shape2.bottom);
-
     return (right - left) * (bottom - top);
 }
+
+function getLargestAreaCell(array){
+  let max = 0;
+  let cellId;
+  for(let index=0; index < array.length; index++){
+    if(array[index].area > max ){
+      max = array[index].area
+      cellId = { r: array[index].r, c: array[index].c}
+    }
+  }
+  return cellId;
+}
+
+
+
+
 
