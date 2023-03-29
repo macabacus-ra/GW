@@ -48,8 +48,10 @@ function autoAlign() {
 
     
 
-      let listNudged = [];
-      shapesToCompare.map(async (shape, index) => {
+      let listNudged = 0;
+
+      for(let i = 0 ; i < shapesToCompare.length ; i++){
+      // shapesToCompare.mep(async (shape, index) => {
 
         let blnAlignedTop = false;
         let blnAlignedLeft = false;
@@ -58,46 +60,47 @@ function autoAlign() {
         //if(  )
 
         //Find all shapes on the slide whose TOP position is close or equal to the top position of this shape, including this shape
-        if (isTopMisaligned(shapesToCompare, shape.getTop(), gapTolerance)) {
-          shape.setTop(obj.top);
+        if (isTopMisaligned(shapesToCompare, shapesToCompare[i].getTop(), gapTolerance)) {
+          shapesToCompare[i].setTop(obj.top);
           blnAlignedTop = true;
-          listNudged.push({ shape: "Nudged Top", id: shape.getObjectId() });
+          listNudged += 1;
           
         }
-        if (isLeftMisaligned(shapesToCompare, shape.getLeft(), gapTolerance)) {
-          shape.setLeft(obj.left);
+        if (isLeftMisaligned(shapesToCompare, shapesToCompare[i].getLeft(), gapTolerance)) {
+          shapesToCompare[i].setLeft(obj.left);
           blnAlignedLeft = true;
-          listNudged.push({ shape: "Nudged Left", id: shape.getObjectId() });
+          listNudged += 1;
           
         }
         if (!blnAlignedTop) {
-          let bottom = Number(shape.getTop()) + Number(shape.getHeight());
+          let bottom = Number(shapesToCompare[i].getTop() + shapesToCompare[i].getHeight());
           let shapeBottom = bottom.toFixed(2);
           if (isBottomMisaligned(shapesToCompare, shapeBottom, gapTolerance)) {
-            shape.setTop(obj.bottom - shape.getHeight())
-            listNudged.push({ shape: "Nudged Bottom", id: shape.getObjectId() });
+            shapesToCompare[i].setTop(obj.bottom - shapesToCompare[i].getHeight())
+            listNudged += 1;
             
           }
         }
         if (!blnAlignedLeft) {
-          let right = Number(shape.getLeft() + shape.getWidth());
+          let right = Number(shapesToCompare[i].getLeft() + shapesToCompare[i].getWidth());
           let shapeRight = right.toFixed(2);
 
           if (isRightMisaligned(shapesToCompare, shapeRight, gapTolerance)) {
-            listNudged.push({ shape: "Nudged Right", id: shape.getObjectId() });
-            shape.setLeft(obj.right - shape.getWidth())
+            // listNudged.push({ shape: "Nudged Right", id: shapesToCompare[i].getObjectId() });
+            shapesToCompare[i].setLeft(obj.right - shapesToCompare[i].getWidth())
+            listNudged += 1;
           }
         }
-      });
+      }
       
 
-      shapesAlignedObj.shapesAligned = listNudged.length;
-      shapesAlignedObj.shapesSelected = shapeCount;
+      
+      
 
-      console.log(listNudged.length + " Shapes aligned");
+      console.log(listNudged + " Shapes aligned in " + (Date.now() - startTime) + ' milliseconds' );
 
     } else if (shapeCount === 2) {      
-      shapesAlignedObj.shapesSelected = 2
+      // shapesAlignedObj.shapesSelected = 2
       console.log("Select at least 3 shapes to perform this operation");
 
     } else if(shapeCount === 0){
@@ -105,23 +108,24 @@ function autoAlign() {
     }
   }
   
-  const millis = Date.now() - startTime;
-
-  console.log(`seconds elapsed = ${millis}`);
+  // console.log(`milliseconds elapsed = ${Date.now() - startTime} ');
 } 
 
 //==================================================
 function getComparisonShapes(shapes) {
   let shapesToCompareArr = [];
-  shapes.map((shape) => {
+
+  for(let i = 0 ; i < shapes.length ; i++){
+  //shapes.mep((shape) => {
     // we dont't have the ability to ignore shapes outside of the slide area because
     // we do not have access to the slide dimensions.
     // we can exlcude shapes from this list that are unsupported
     // https://learn.microsoft.com/en-us/javascript/api/powerpoint/powerpoint.shapetype?view=powerpoint-js-preview
-    if (shape.getPageElementType() !== SlidesApp.PageElementType.UNSUPPORTED) {
-      shapesToCompareArr.push(shape);
+    
+    if (shapes[i].getPageElementType() !== SlidesApp.PageElementType.UNSUPPORTED) {
+      shapesToCompareArr.push(shapes[i]);
     }
-  });
+  };
   return shapesToCompareArr;
 }
 //============================================================
@@ -167,8 +171,6 @@ function isLeftMisaligned(shapes, currentShapeLeft, tolerance) {
         obj.left = qryLeft;
         // list compare is empty so that the shape is not compared again
         return true;
-      } else {
-        console.log("--");
       }
     }
   }
@@ -176,14 +178,17 @@ function isLeftMisaligned(shapes, currentShapeLeft, tolerance) {
 //==================================================================================================
 function isBottomMisaligned(shapes, currentShapeBottom, tolerance) {
   let listCompare = [];
-  shapes.map((shape) => {
 
-    let sum = Number(shape.getTop() + shape.getHeight());
+  for(let i = 0; i < shapes.length ; i++){
+  //shapes.mep((shape) => {
+
+    let sum = Number(shapes[i].getTop() + shapes[i].getHeight());
     let shapeBottom = sum.toFixed(2);
     if (isPositionSimilar(currentShapeBottom, shapeBottom, tolerance)) {
-      listCompare.push(shape);
+      listCompare.push(shapes[i]);
     }
-  });
+  };
+
   if (canCompare(listCompare)) {
     let qry = vbaQueryFuncToJS(listCompare, "bottom");
     if (qry.length >= 2 && qry[0].length > qry[1].length) {
@@ -200,15 +205,17 @@ function isBottomMisaligned(shapes, currentShapeBottom, tolerance) {
 //==================================================================================================
 function isRightMisaligned(shapes, currentShapeRight, tolerance) {
   let listCompare = [];
-  shapes.map((shape) => {
 
-    let right = Number(shape.getLeft() + shape.getWidth());
+  for(let i = 0; i < shapes.length ; i++){
+  //shapes.mep((shape) => {
+
+    let right = Number(shapes[i].getLeft() + shapes[i].getWidth());
     let shapeRight = right.toFixed(2);
 
     if (isPositionSimilar(currentShapeRight, shapeRight, tolerance)) {
-      listCompare.push(shape);
+      listCompare.push(shapes[i]);
     }
-  });
+  };
   if (canCompare(listCompare)) {
     let qry = vbaQueryFuncToJS(listCompare, "right");
 
@@ -237,7 +244,7 @@ function vbaQueryFuncToJS(array, pos) {
 
     case "top":
       objectWithGroups = array.reduce((groups, item) => {
-        let top = Number(item.getTop());
+        let top = item.getTop();
         let groupNumber = top.toFixed(2);
         const group = groups[groupNumber] || [];
         group.push(item);
@@ -249,7 +256,7 @@ function vbaQueryFuncToJS(array, pos) {
 
     case "left":
       objectWithGroups = array.reduce((groups, item) => {
-        let left = Number(item.getLeft());
+        let left = item.getLeft();
         let groupNumber = left.toFixed(2);
         const group = groups[groupNumber] || [];
         group.push(item);
@@ -262,8 +269,9 @@ function vbaQueryFuncToJS(array, pos) {
 
     case "right":
       objectWithGroups = array.reduce((groups, item) => {
-        let right = Number(item.getLeft() + item.getWidth());
+        let right = item.getLeft() + item.getWidth();
         let groupNumber = right.toFixed(2);
+
         const group = groups[groupNumber] || [];
         group.push(item);
         groups[groupNumber] = group;
@@ -274,7 +282,7 @@ function vbaQueryFuncToJS(array, pos) {
 
     case "bottom":
       objectWithGroups = array.reduce((groups, item) => {
-        let bottom = Number(item.getTop() + item.getHeight());
+        let bottom = item.getTop() + item.getHeight();
         let groupNumber = bottom.toFixed(2);
         const group = groups[groupNumber] || [];
         group.push(item);
