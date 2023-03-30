@@ -20,95 +20,78 @@ let shapesAlignedObj = {
 }
 
 function autoAlign() {
-   const startTime = Date.now();
-   
-
+  const startTime = Date.now();
+  let shapes;
 
   let selections = SlidesApp.getActivePresentation().getSelection()
   let pageElementRange = selections.getPageElementRange()
-  if(!pageElementRange){ SlidesApp.getUi().alert('Select one or more shapes to perform this operation'); }
 
-  if (pageElementRange){
+  if(!pageElementRange){  // If no shapes are selected, get all shapes on slide
+    shapes = SlidesApp.getActivePresentation().getSelection().getCurrentPage().getPageElements()
+  } else if (pageElementRange){ 
+    shapes = pageElementRange.getPageElements() 
+  }
 
-    let elements = pageElementRange.getPageElements()
-    let shapes = elements
+  if (shapes.length > 2) {
+    // Get the misalignment tolerance = 9 points = 1/8";
+    // don't want to make this any bigger because it could have unintended alignment consequences
+    // create a collection of shapes we want to compare
 
-    if(shapes.length === 1){ SlidesApp.getUi().alert('Select 3 or more shapes to perform this operation'); return }    
+    let shapesToCompare = getComparisonShapes(shapes);
+    // begin checking shapes for misalignment
 
-    const shapeCount = elements.length
+    let listNudged = 0;
 
-    if (shapeCount > 2) {
+    for(let i = 0 ; i < shapesToCompare.length ; i++){
+    // shapesToCompare.mep(async (shape, index) => {
 
-      // 'Get the misalignment tolerance = 9 points = 1/8";
-      // don't want to make this any bigger because it could have unintended alignment consequences
-      // create a collection of shapes we want to compare
+      let blnAlignedTop = false;
+      let blnAlignedLeft = false;
 
-      let shapesToCompare = getComparisonShapes(shapes);
-      // begin checking shapes for misalignment
+      //Ignore these shape types for repositioning
+      // if( shapesToCompare[i].getPageElementType() === SlidesApp.PageElementType. placeholder ?? ){
+          // cannot get a shape type of placeholder
+      // }
 
-    
-
-      let listNudged = 0;
-
-      for(let i = 0 ; i < shapesToCompare.length ; i++){
-      // shapesToCompare.mep(async (shape, index) => {
-
-        let blnAlignedTop = false;
-        let blnAlignedLeft = false;
-
-        //Ignore these shape types for repositioning
-        //if(  )
-
-        //Find all shapes on the slide whose TOP position is close or equal to the top position of this shape, including this shape
-        if (isTopMisaligned(shapesToCompare, shapesToCompare[i].getTop(), gapTolerance)) {
-          shapesToCompare[i].setTop(obj.top);
-          blnAlignedTop = true;
+      //Find all shapes on the slide whose TOP position is close or equal to the top position of this shape, including this shape
+      if (isTopMisaligned(shapesToCompare, shapesToCompare[i].getTop(), gapTolerance)) {
+        shapesToCompare[i].setTop(obj.top);
+        blnAlignedTop = true;
+        listNudged += 1;
+        
+      }
+      if (isLeftMisaligned(shapesToCompare, shapesToCompare[i].getLeft(), gapTolerance)) {
+        shapesToCompare[i].setLeft(obj.left);
+        blnAlignedLeft = true;
+        listNudged += 1;
+        
+      }
+      if (!blnAlignedTop) {
+        let bottom = Number(shapesToCompare[i].getTop() + shapesToCompare[i].getHeight());
+        let shapeBottom = bottom.toFixed(2);
+        if (isBottomMisaligned(shapesToCompare, shapeBottom, gapTolerance)) {
+          shapesToCompare[i].setTop(obj.bottom - shapesToCompare[i].getHeight())
           listNudged += 1;
           
-        }
-        if (isLeftMisaligned(shapesToCompare, shapesToCompare[i].getLeft(), gapTolerance)) {
-          shapesToCompare[i].setLeft(obj.left);
-          blnAlignedLeft = true;
-          listNudged += 1;
-          
-        }
-        if (!blnAlignedTop) {
-          let bottom = Number(shapesToCompare[i].getTop() + shapesToCompare[i].getHeight());
-          let shapeBottom = bottom.toFixed(2);
-          if (isBottomMisaligned(shapesToCompare, shapeBottom, gapTolerance)) {
-            shapesToCompare[i].setTop(obj.bottom - shapesToCompare[i].getHeight())
-            listNudged += 1;
-            
-          }
-        }
-        if (!blnAlignedLeft) {
-          let right = Number(shapesToCompare[i].getLeft() + shapesToCompare[i].getWidth());
-          let shapeRight = right.toFixed(2);
-
-          if (isRightMisaligned(shapesToCompare, shapeRight, gapTolerance)) {
-            // listNudged.push({ shape: "Nudged Right", id: shapesToCompare[i].getObjectId() });
-            shapesToCompare[i].setLeft(obj.right - shapesToCompare[i].getWidth())
-            listNudged += 1;
-          }
         }
       }
-      
+      if (!blnAlignedLeft) {
+        let right = Number(shapesToCompare[i].getLeft() + shapesToCompare[i].getWidth());
+        let shapeRight = right.toFixed(2);
 
-      
-      
-
-      console.log(listNudged + " Shapes aligned in " + (Date.now() - startTime) + ' milliseconds' );
-
-    } else if (shapeCount === 2) {      
-      // shapesAlignedObj.shapesSelected = 2
-      console.log("Select at least 3 shapes to perform this operation");
-
-    } else if(shapeCount === 0){
-      console.log("Will get all shapes in current slide");
+        if (isRightMisaligned(shapesToCompare, shapeRight, gapTolerance)) {
+          // listNudged.push({ shape: "Nudged Right", id: shapesToCompare[i].getObjectId() });
+          shapesToCompare[i].setLeft(obj.right - shapesToCompare[i].getWidth())
+          listNudged += 1;
+        }
+      }
     }
-  }
   
-  // console.log(`milliseconds elapsed = ${Date.now() - startTime} ');
+  console.log(listNudged + " Shapes aligned in " + (Date.now() - startTime) + ' milliseconds' );
+
+  } else if (shapes.length === 2) {      
+    SlidesApp.getUi().alert("Select at least 3 shapes to perform this operation");
+  }
 } 
 
 //==================================================
