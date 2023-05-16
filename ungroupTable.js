@@ -13,8 +13,8 @@ export const ungroupTable = () => {
         }
 
     } else {
-        // no way to get only tables within a pageElementRange
-        // so we must loop through all page elements and check if they are tables
+        // no way to get ONLY tables from a pageElementRange
+        // so we must loop through all *Selected* page elements and get the first table element
         let elements = pageElementRange.getPageElements()
         let tables = []
 
@@ -39,13 +39,12 @@ export const ungroupTable = () => {
 
             for ( let r = 0 ; r < rows ; r++ ) {
                 let rowHeight = table.getCell(r, 0).getParentRow().getMinimumHeight()
-                let rowData = []
                 let currentLeft = tableLeft 
 
                 for ( let c = 0 ; c < cols ; c++ ) {
                     
                     let cell = table.getCell(r, c)
-                    let text = cell.getText().asString()
+                    
                     let columnWidth = cell.getParentColumn().getWidth()
                     let fillColorString ;
                     let fillColor = cell.getFill().getSolidFill().getColor()
@@ -58,51 +57,71 @@ export const ungroupTable = () => {
                         fillColorString = fillColor.asRgbColor().asHexString() 
                     }
 
-                    let fontColorString ;
-                    let fontColor = cell.getText().getTextStyle().getForegroundColor()
-                    let fontColorType = fontColor.getColorType()
+                    let cellText = cell.getText()
 
-                    if(fontColorType == 'THEME'){
-                        let THEMECOLOR = fontColor.asThemeColor().getThemeColorType() // some kind of ACCENT1, ACCENT2, DARK1 etc
-                        fontColorString = colorScheme.getConcreteColor(THEMECOLOR).asRgbColor().asHexString()
-                    }else { 
-                        fontColorString = fontColor.asRgbColor().asHexString() 
-                    }
+                    if(!cellText.isEmpty()){
+                        // Check for empty text cells.
+                        // Text within a table cell always terminates with a newline character. 
+                        
+                        let text = cellText.asRenderedString()
+                        let str = text.replace(/\s+/g, '');
+                        if(str.length > 0){
 
-                    let textFont = cell.getText().getTextStyle().getFontFamily()
-                    let fontSize = cell.getText().getTextStyle().getFontSize()
-                    let bold = cell.getText().getTextStyle().isBold()
-                    let italic = cell.getText().getTextStyle().isItalic()
-                    let underline = cell.getText().getTextStyle().isUnderline()
-                    let strikethrough = cell.getText().getTextStyle().isStrikethrough()
+                            let fontColorString ;
+                            let fontColor = cell.getText().getTextStyle().getForegroundColor()
+                            let fontColorType = fontColor.getColorType()
 
-                    let newShape = currentPage.insertShape(
-                            SlidesApp.ShapeType.RECTANGLE, 
-                            currentLeft, 
-                            currentTop, 
-                            columnWidth, 
-                            rowHeight
-                        )
+                            if(fontColorType == 'THEME'){
+                                let THEMECOLOR = fontColor.asThemeColor().getThemeColorType() // some kind of ACCENT1, ACCENT2, DARK1 etc
+                                fontColorString = colorScheme.getConcreteColor(THEMECOLOR).asRgbColor().asHexString()
+                            }else { 
+                                fontColorString = fontColor.asRgbColor().asHexString() 
+                            }
 
-                    newShape.getText().setText(text)
-                    newShape.getText().getTextStyle().setFontSize(fontSize)
-                    newShape.getText().getTextStyle().setFontFamily(textFont)
-                    newShape.getText().getTextStyle().setBold(bold)
-                    newShape.getText().getTextStyle().setItalic(italic)
-                    newShape.getText().getTextStyle().setUnderline(underline)
-                    newShape.getText().getTextStyle().setStrikethrough(strikethrough)
-                    newShape.getText().getTextStyle().setForegroundColor(fontColorString)
-                    newShape.getFill().setSolidFill(fillColorString)
-                    newShape.getBorder().setTransparent()
+                            let textFont = cell.getText().getTextStyle().getFontFamily()
+                            let fontSize = cell.getText().getTextStyle().getFontSize()
+                            let bold = cell.getText().getTextStyle().isBold()
+                            let italic = cell.getText().getTextStyle().isItalic()
+                            let underline = cell.getText().getTextStyle().isUnderline()
+                            let strikethrough = cell.getText().getTextStyle().isStrikethrough()
 
-                    currentLeft = tableLeft + columnWidth
-                }
-        
+                            let newShape = currentPage.insertShape(
+                                    SlidesApp.ShapeType.RECTANGLE, 
+                                    currentLeft, 
+                                    currentTop, 
+                                    columnWidth, 
+                                    rowHeight
+                                )
+
+                            newShape.getText().setText(text)
+                            newShape.getText().getTextStyle().setFontSize(fontSize)
+                            newShape.getText().getTextStyle().setFontFamily(textFont)
+                            newShape.getText().getTextStyle().setBold(bold)
+                            newShape.getText().getTextStyle().setItalic(italic)
+                            newShape.getText().getTextStyle().setUnderline(underline)
+                            newShape.getText().getTextStyle().setStrikethrough(strikethrough)
+                            newShape.getText().getTextStyle().setForegroundColor(fontColorString) 
+                            newShape.getFill().setSolidFill(fillColorString)
+                            newShape.getBorder().setTransparent() 
+                            currentLeft = currentLeft + columnWidth
+
+                        }else {
+                            let newShape = currentPage.insertShape(
+                                SlidesApp.ShapeType.RECTANGLE, 
+                                currentLeft, 
+                                currentTop, 
+                                columnWidth, 
+                                rowHeight
+                            ) 
+                            newShape.getFill().setSolidFill(fillColorString)
+                            newShape.getBorder().setTransparent() 
+                            currentLeft = currentLeft + columnWidth
+                        }
+                    } 
+                } 
                 currentTop = currentTop + rowHeight
-            }
-
-            table.remove()
-
+            } 
+            table.remove() 
             return {
                 message: 'success' 
             }
